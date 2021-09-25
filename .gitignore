@@ -1,0 +1,4 @@
+src/Listings/
+src/Objects/
+*.uvgui.*
+*.uvopt
