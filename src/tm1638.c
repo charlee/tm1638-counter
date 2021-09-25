@@ -11,6 +11,7 @@ unsigned char code sevenseg_hex[] = {
 	0x39, 0x5E, 0x79, 0x71
 };
 
+// src: https://en.wikichip.org/wiki/seven-segment_display/representing_letters
 const unsigned char sevenseg_digits_alphabets[75]= {
 /*  0     1     2     3     4     5     6     7     8     9     :     ;     */
     0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x00, 0x00, 
@@ -112,6 +113,38 @@ unsigned char tm1638_read_keys() {
 	STB = 1;
 
   return ch;
+}
+
+/**
+ * Wait for a key to be pressed.
+ * 
+ * Params:
+ *   timeout: how many loops to wait.
+ * 
+ * Returns: A number [0, 7] representing which key is pressed.
+ *          Returns -1 if no key pressed before timeout.
+ * 
+ */
+unsigned char tm1638_wait_for_keypress() {
+	unsigned char i;
+	unsigned char ch;
+	while (1) {
+		ch = tm1638_read_keys();
+		if (ch > 0) {
+
+ 			// wait until the key is released
+			while (tm1638_read_keys() == ch);
+
+			// detect which key is pressed
+			for (i = 0; i < 8; i++) {
+				if (ch == (1 << i)) {
+					return i;
+				}
+			}
+		}
+	}
+
+	return -1;
 }
 
 void tm1638_clear_all() {
