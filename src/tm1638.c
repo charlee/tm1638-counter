@@ -1,4 +1,5 @@
 #include <reg52.h>
+#include <tm1638.h>
 
 sbit DIO=P1 ^ 0;
 sbit CLK=P1 ^ 1;
@@ -160,6 +161,13 @@ void tm1638_clear_all() {
 	STB = 1;
 }
 
+void tm1638_clear_7seg() {
+	unsigned char i;
+	for (i = 0; i < 8; i++) {
+		tm1638_set_digit_off(i);
+	}
+}
+
 void tm1638_display_on(unsigned char duty_cycle) {
 	_tm1638_write_cmd(0x88 | (duty_cycle & 0x07));
 }
@@ -199,6 +207,9 @@ void tm1638_show_hex(unsigned char pos, unsigned char num_digits, unsigned long 
 	for (i = 0; i < num_digits; i++) {
 		tm1638_show_digit(pos - i, num & 0x0f, 0);
 		num >>= 4;
+		if(num == 0) {
+			break;
+		}
 	}
 }
 
@@ -208,6 +219,9 @@ void tm1638_show_dec(unsigned char pos, unsigned char num_digits, unsigned long 
 	for (i = 0; i < num_digits; i++) {
 		tm1638_show_digit(pos - i, num % 10, 0);
 		num /= 10;
+		if(num == 0) {
+			break;
+		}
 	}
 }
 

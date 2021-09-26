@@ -11,6 +11,7 @@
 void tm1638_write_byte(unsigned char address, unsigned char b);
 void tm1638_write_bytes(unsigned char address, const unsigned char bytes[], unsigned char n);
 void tm1638_clear_all();
+void tm1638_clear_7seg();
 void tm1638_display_on(unsigned char duty_cycle);
 void tm1638_display_off();
 void tm1638_show_digit(unsigned char pos, unsigned char digit, unsigned char dot);
