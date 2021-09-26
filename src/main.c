@@ -4,7 +4,7 @@
 
 #define TIMER_10MS (65536 - 10000)
 #define reset_T0() { TH0 = TIMER_10MS / 256; TL0 = TIMER_10MS % 256; }
-#define reset_T1() {}
+#define reset_T1() { TH1 = (65536 - 50000) / 256; TL1 = (65536 - 50000) % 256; }
 
 #define FUNC_STOPWATCH 5
 #define FUNC_TIMER 7
@@ -13,9 +13,13 @@
 
 void init();
 unsigned char show_menu();
-void start_counter();
-void start_timer();
-void start_stopwatch();
+void func_counter();
+void func_timer();
+void func_stopwatch();
+void show_quit();
+void show_reset();
+void reset_ticks();
+void show_stopwatch();
 void delay(unsigned int ms);
 
 
@@ -35,9 +39,9 @@ void main()
 	while(1) {
 		func = show_menu();
 
-		if (func == FUNC_TIMER) start_timer();
-		else if (func == FUNC_COUNTER) start_counter();
-		else if (func == FUNC_STOPWATCH) start_stopwatch();
+		if (func == FUNC_TIMER) func_timer();
+		else if (func == FUNC_COUNTER) func_counter();
+		else if (func == FUNC_STOPWATCH) func_stopwatch();
 	}
 }
 
@@ -61,7 +65,6 @@ void init() {
 	
 	// enable timers
 	ET0 = 1;
-	ET1 = 1;
 }
 
 unsigned char show_menu() {
@@ -83,16 +86,27 @@ void stop_timer0() {
 	TR0 = 0;
 }
 
-void start_timer1() {
-	reset_T1();
-	TR1 = 1;
+
+void show_reset() {
+	tm1638_clear_7seg();
+	tm1638_show_text(2, "RESET");
 }
 
-void stop_timer1() {
-	TR1 = 0;
+/**
+ * Reset the global ticks counter.
+ */
+void reset_ticks() {
+	centisecs = 0;
+	secs = 0;
+	mins = 0;
+	hours = 0;
 }
 
-void start_counter() {
+
+/**
+ * Start the counter.
+ */
+void func_counter() {
 	unsigned char key;
 	unsigned long counter = 0;
 	unsigned char quit = 0;
@@ -104,8 +118,7 @@ void start_counter() {
 
 	delay(2000);
 
-
-	while (1) {
+	while (!quit) {
 		tm1638_clear_7seg();
 		tm1638_show_dec(7, 8, counter);
 		key = tm1638_wait_for_keypress();
@@ -117,8 +130,7 @@ void start_counter() {
 			case 3: if (counter >= 10) { counter -= 10; } break;
 			case 2: if (counter >= 100) { counter -= 100; } break;
 			case 1: {
-				tm1638_clear_7seg();
-				tm1638_show_text(2, "RESET");
+				show_reset();
 				key = tm1638_wait_for_keypress();
 				if (key == 1) {
 					counter = 0;
@@ -126,8 +138,7 @@ void start_counter() {
 				break;
 			}
 			case 0: {
-				tm1638_clear_7seg();
-				tm1638_show_text(3, "QUIT");
+				show_quit();
 				key = tm1638_wait_for_keypress();
 				if (key == 0) {
 					quit = 1;
@@ -135,14 +146,10 @@ void start_counter() {
 				}
 			}
 		}
-
-		if (quit) {
-			break;
-		}
 	}
 }
 
-void start_timer() {
+void func_timer() {
 	tm1638_clear_all();
 	tm1638_show_digit(0, FUNC_TIMER, 1);
 	tm1638_show_text(3, "TIMER");
@@ -151,13 +158,87 @@ void start_timer() {
 	delay(2000);
 }
 
-void start_stopwatch() {
+void show_quit() {
+	tm1638_clear_7seg();
+	tm1638_show_text(3, "QUIT");
+}
+
+void show_stopwatch() {
+	tm1638_show_dec_d(1, 2, hours);
+	tm1638_show_dec_zd(3, 2, mins);
+	tm1638_show_dec_zd(5, 2, secs);
+	tm1638_show_dec_z(7, 2, centisecs);
+}
+
+/**
+ * Start the stopwatch.
+ */
+void func_stopwatch() {
+	unsigned char key;
+	unsigned char last_key;
+	unsigned char is_running = 0;
+	unsigned char quit = 0;
+
 	tm1638_clear_all();
 	tm1638_show_digit(0, FUNC_STOPWATCH, 1);
 	tm1638_show_text(4, "STOP");
 	tm1638_set_led(FUNC_STOPWATCH, 1);
 
 	delay(2000);
+
+	tm1638_clear_7seg();
+	reset_ticks();
+
+	while (!quit) {
+		show_stopwatch();
+
+		key = tm1638_read_keys();
+
+		// make sure the key state is changed to prevent from being triggered repeatedly
+		if (key != last_key) {
+			last_key = key;
+
+			switch (key) {
+				case 0x80: {
+					if (is_running) {
+						stop_timer0();
+						is_running = 0;
+						show_stopwatch();
+
+					} else {
+						is_running = 1;
+						start_timer0();
+					}
+					break;
+				}
+
+				case 0x40: {
+					if (!is_running) {
+						reset_ticks();
+						show_stopwatch();
+					}
+
+					break;
+				}
+
+				case 0x01: {
+					if (!is_running) {
+						while (tm1638_read_keys() != 0x01);
+						show_quit();
+						delay(200);
+						key = tm1638_wait_for_keypress();
+						if (key == 0) {
+							quit = 1;
+							break;
+						}
+					}
+				}
+
+				default: break;
+			}
+		}
+
+	}
 }
 
 
@@ -184,4 +265,3 @@ void timer0() interrupt 1 {
 
 	reset_T0();
 }
-

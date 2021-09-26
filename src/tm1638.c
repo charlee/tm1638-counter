@@ -144,8 +144,6 @@ unsigned char tm1638_wait_for_keypress() {
 			}
 		}
 	}
-
-	return -1;
 }
 
 void tm1638_clear_all() {
@@ -218,6 +216,36 @@ void tm1638_show_dec(unsigned char pos, unsigned char num_digits, unsigned long 
 	
 	for (i = 0; i < num_digits; i++) {
 		tm1638_show_digit(pos - i, num % 10, 0);
+		num /= 10;
+		if(num == 0) {
+			break;
+		}
+	}
+}
+
+void tm1638_show_dec_z(unsigned char pos, unsigned char num_digits, unsigned long num) {
+	unsigned char i;
+	
+	for (i = 0; i < num_digits; i++) {
+		tm1638_show_digit(pos - i, num % 10, 0);
+		num /= 10;
+	}
+}
+
+void tm1638_show_dec_zd(unsigned char pos, unsigned char num_digits, unsigned long num) {
+	unsigned char i;
+	
+	for (i = 0; i < num_digits; i++) {
+		tm1638_show_digit(pos - i, num % 10, (i == 0));
+		num /= 10;
+	}
+}
+
+void tm1638_show_dec_d(unsigned char pos, unsigned char num_digits, unsigned long num) {
+	unsigned char i;
+	
+	for (i = 0; i < num_digits; i++) {
+		tm1638_show_digit(pos - i, num % 10, (i == 0));
 		num /= 10;
 		if(num == 0) {
 			break;

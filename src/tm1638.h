@@ -20,6 +20,9 @@ void tm1638_set_led(unsigned char pos, unsigned char on);
 void tm1638_show_number(unsigned char pos, unsigned char num_digits, unsigned long num);
 void tm1638_show_hex(unsigned char pos, unsigned char num_digits, unsigned long num);
 void tm1638_show_dec(unsigned char pos, unsigned char num_digits, unsigned long num);
+void tm1638_show_dec_z(unsigned char pos, unsigned char num_digits, unsigned long num);
+void tm1638_show_dec_d(unsigned char pos, unsigned char num_digits, unsigned long num);
+void tm1638_show_dec_zd(unsigned char pos, unsigned char num_digits, unsigned long num);
 void tm1638_show_char(unsigned char pos, unsigned char ch, unsigned char dot);
 void tm1638_show_text(unsigned char pos, const char* text);
 
