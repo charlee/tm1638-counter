@@ -1,5 +1,5 @@
-#include <tm1638.h>
-#include <reg52.h>
+#include <8052.h>
+#include "tm1638.h"
 
 
 #define TIMER_10MS (65536 - 10000)
@@ -26,12 +26,6 @@ void delay(unsigned int ms);
 
 // 10ms ticks
 unsigned long ticks10 = 0;
-
-// unsigned int centisecs = 0;
-// unsigned char secs = 0;
-// unsigned char mins = 0;
-// unsigned char hours = 0;
-// unsigned char count_down = 0;
 
 
 void main()
@@ -357,7 +351,7 @@ void func_stopwatch() {
 /**
  * 10ms timer for the stopwatch / timer
  */
-void timer0() interrupt 1 {
+void timer0() __interrupt 1 {
 
 	ticks10++;
 	reset_T0();

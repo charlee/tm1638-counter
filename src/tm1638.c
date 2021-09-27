@@ -1,11 +1,12 @@
-#include <reg52.h>
-#include <tm1638.h>
+#include <8051.h>
+#include "tm1638.h"
 
-sbit DIO=P1 ^ 0;
-sbit CLK=P1 ^ 1;
-sbit STB=P1 ^ 2;
+#define DIO P1_0
+#define CLK P1_1
+#define STB P1_2
 
-unsigned char code sevenseg_hex[] = {
+
+unsigned char sevenseg_hex[] = {
 	0x3F, 0x06, 0x5B,	0x4F,
 	0x66, 0x6D, 0x7D, 0x07,
   0x7F, 0x6F, 0x77, 0x7C,

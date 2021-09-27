@@ -25,3 +25,14 @@ the 7segs will show the name of the functionality shortly.
 3. STOPWTCH
 4. COUNTER
 5. FITNESS
+
+
+Development
+----------------
+
+
+Install [SDCC](http://sdcc.sourceforge.net/)
+
+Install `make`:
+
+    > chocolatey.exe install make

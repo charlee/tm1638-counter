@@ -1,4 +1,10 @@
-src/Listings/
-src/Objects/
-*.uvgui.*
-*.uvopt
+*.asm
+*.lk
+*.lst
+*.map
+*.mem
+*.rel
+*.rst
+*.sym
+*.hex
+*.ihx
