@@ -6,14 +6,19 @@
 #define reset_T0() { TH0 = TIMER_10MS / 256; TL0 = TIMER_10MS % 256; }
 #define reset_T1() { TH1 = (65536 - 50000) / 256; TL1 = (65536 - 50000) % 256; }
 
-#define FUNC_STOPWATCH 5
+#define BUZZER P2_3
+
+#define FUNC_DOUBLE_COUNTER 4
+#define FUNC_COUNTER 5
+#define FUNC_STOPWATCH 6
 #define FUNC_TIMER 7
-#define FUNC_COUNTER 6
 
 
 void init();
 unsigned char show_menu();
+void beep();
 void func_counter();
+void func_double_counter();
 void func_timer();
 void func_stopwatch();
 void show_quit();
@@ -40,6 +45,7 @@ void main()
 
 		if (func == FUNC_TIMER) func_timer();
 		else if (func == FUNC_COUNTER) func_counter();
+		else if (func == FUNC_DOUBLE_COUNTER) func_double_counter();
 		else if (func == FUNC_STOPWATCH) func_stopwatch();
 	}
 }
@@ -57,6 +63,8 @@ void init() {
 	tm1638_display_on(3);
 	tm1638_clear_all();
 
+	BUZZER = 1;
+
 	// set both T0 and T1 to 16bit timer
 	TMOD = 0x11;
 	
@@ -73,9 +81,10 @@ unsigned char show_menu() {
 	tm1638_show_text(2, "SELECT");
 
 	// show available functions in LEDs
-	tm1638_set_led(FUNC_STOPWATCH, 1);
+	tm1638_set_led(FUNC_DOUBLE_COUNTER, 1);
 	tm1638_set_led(FUNC_COUNTER, 1);
 	tm1638_set_led(FUNC_TIMER, 1);
+	tm1638_set_led(FUNC_STOPWATCH, 1);
 
 	key = tm1638_wait_for_keypress();
 
@@ -155,6 +164,60 @@ void func_counter() {
 	}
 }
 
+/**
+ * Start the double counter.
+ */
+void func_double_counter() {
+	unsigned char key;
+	unsigned long counter0 = 0;
+	unsigned long counter1 = 0;
+	unsigned char quit = 0;
+
+	tm1638_clear_all();
+	tm1638_show_text(2, "2COUNT");
+	tm1638_set_led(FUNC_DOUBLE_COUNTER, 1);
+
+	delay(1000);
+
+	while (!quit) {
+		tm1638_clear_7seg();
+		tm1638_show_dec(7, 4, counter0);
+		tm1638_show_dec_d(3, 4, counter1);
+		key = tm1638_wait_for_keypress();
+		switch (key) {
+			case 7: counter0++; break;
+			case 6: counter0 += 10; break;
+			case 5: {
+				show_reset();
+				key = tm1638_wait_for_keypress();
+				if (key == 5) {
+					counter0 = 0;
+				}
+				break;
+			}
+			case 3: counter1++; break;
+			case 2: counter1 += 10; break;
+			case 1: {
+				show_reset();
+				key = tm1638_wait_for_keypress();
+				if (key == 1) {
+					counter1 = 0;
+				}
+				break;
+			}
+			case 0: {
+				show_quit();
+				key = tm1638_wait_for_keypress();
+				if (key == 0) {
+					quit = 1;
+					break;
+				}
+			}
+		}
+	}
+}
+
+
 void show_timer(unsigned char is_running, unsigned long timer_ticks) {
 	unsigned long t = (timer_ticks > ticks10) ? (timer_ticks - ticks10) + 60 : 0;
 	unsigned char centisecs, secs, mins, hours;
@@ -176,9 +239,19 @@ void show_timer(unsigned char is_running, unsigned long timer_ticks) {
 	tm1638_set_led(FUNC_TIMER, centisecs > 50 || !is_running);
 }
 
+void beep() {
+	unsigned char i;
+	for (i = 0; i < 3; i++) {
+		BUZZER = 0;
+		delay(400);
+		BUZZER = 1;
+		delay(400);
+	}
+}
+
 void func_timer() {
 	unsigned char key;
-	unsigned char last_key;
+	unsigned char last_key = 0xff;
 	unsigned char is_running = 0;
 	unsigned char quit = 0;
 	unsigned long timer_ticks = 0;
@@ -193,9 +266,10 @@ void func_timer() {
 	reset_ticks();
 
 	while (!quit) {
-		if (ticks10 > timer_ticks) {
+		if (ticks10 > timer_ticks && is_running) {
 			stop_timer0();
 			is_running = 0;
+			beep();
 		}
 
 		show_timer(is_running, timer_ticks);
@@ -314,7 +388,7 @@ void show_stopwatch(unsigned char is_running) {
  */
 void func_stopwatch() {
 	unsigned char key;
-	unsigned char last_key;
+	unsigned char last_key = 0xff;
 	unsigned char is_running = 0;
 	unsigned char quit = 0;
 
