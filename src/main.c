@@ -19,7 +19,8 @@ void func_stopwatch();
 void show_quit();
 void show_reset();
 void reset_ticks();
-void show_stopwatch();
+void show_stopwatch(unsigned char is_running);
+void show_timer(unsigned char is_running, unsigned long timer_ticks);
 void delay(unsigned int ms);
 
 
@@ -75,6 +76,12 @@ unsigned char show_menu() {
 
 	tm1638_clear_all();
 	tm1638_show_text(2, "SELECT");
+
+	// show available functions in LEDs
+	tm1638_set_led(FUNC_STOPWATCH, 1);
+	tm1638_set_led(FUNC_COUNTER, 1);
+	tm1638_set_led(FUNC_TIMER, 1);
+
 	key = tm1638_wait_for_keypress();
 
 	return key;
@@ -112,7 +119,6 @@ void func_counter() {
 	unsigned char quit = 0;
 
 	tm1638_clear_all();
-	tm1638_show_digit(0, FUNC_COUNTER, 1);
 	tm1638_show_text(3, "COUNT");
 	tm1638_set_led(FUNC_COUNTER, 1);
 
@@ -149,14 +155,35 @@ void func_counter() {
 	}
 }
 
+void show_timer(unsigned char is_running, unsigned long timer_ticks) {
+	unsigned long t = timer_ticks - ticks10;
+	unsigned char centisecs, secs, mins, hours;
+	centisecs = t % 100;
+	t = t / 100;
+
+	secs = t % 60;
+	t = t / 60;
+
+	mins = t % 60;
+	hours = t / 60;
+
+	tm1638_show_dec_d(1, 2, hours);
+	tm1638_show_dec_zd(3, 2, mins);
+	tm1638_show_dec_zd(5, 2, secs);
+	tm1638_show_dec_z(7, 2, centisecs);
+
+	// flash the LED if running
+	tm1638_set_led(FUNC_TIMER, centisecs < 50 || !is_running);
+}
+
 void func_timer() {
 	unsigned char key;
 	unsigned char last_key;
 	unsigned char is_running = 0;
 	unsigned char quit = 0;
+	unsigned long timer_ticks = 0;
 
 	tm1638_clear_all();
-	tm1638_show_digit(0, FUNC_TIMER, 1);
 	tm1638_show_text(3, "TIMER");
 	tm1638_set_led(FUNC_TIMER, 1);
 
@@ -165,6 +192,69 @@ void func_timer() {
 	tm1638_clear_7seg();
 	reset_ticks();
 
+	show_timer(is_running, timer_ticks);
+
+	while (!quit) {
+		show_timer(is_running, timer_ticks);
+
+		key = tm1638_read_keys();
+
+		if (key != last_key) {
+			last_key = key;
+
+			switch (key) {
+				case 0x80:
+					if (is_running) {
+						stop_timer0();
+						is_running = 0;
+						show_timer(is_running, timer_ticks);
+					} else if (timer_ticks > 0) {
+						is_running = 1;
+						start_timer0();
+					}
+					break;
+
+				case 0x40:
+					if (!is_running) {
+						reset_ticks();
+						show_timer(is_running, timer_ticks);
+					}
+
+				case 0x20:
+					if (ticks10 == 0) {
+						timer_ticks += 100;
+					}
+					break;
+
+				case 0x10:
+					if (ticks10 == 0) {
+						timer_ticks += 6000;
+					}
+					break;
+
+				case 0x08:
+					if (ticks10 == 0) {
+						timer_ticks += 360000;
+					}
+					break;
+
+				case 0x01:{
+					if (!is_running) {
+						while (tm1638_read_keys() != 0x01);
+						show_quit();
+						delay(200);
+						key = tm1638_wait_for_keypress();
+						if (key == 0) {
+							quit = 1;
+							break;
+						}
+					}
+				}
+			}
+
+		}
+
+	}
 }
 
 void show_quit() {
@@ -172,7 +262,7 @@ void show_quit() {
 	tm1638_show_text(3, "QUIT");
 }
 
-void show_stopwatch() {
+void show_stopwatch(unsigned char is_running) {
 	unsigned long t = ticks10;
 	unsigned char centisecs, secs, mins, hours;
 	centisecs = t % 100;
@@ -188,6 +278,9 @@ void show_stopwatch() {
 	tm1638_show_dec_zd(3, 2, mins);
 	tm1638_show_dec_zd(5, 2, secs);
 	tm1638_show_dec_z(7, 2, centisecs);
+
+	// flash the LED if running
+	tm1638_set_led(FUNC_STOPWATCH, centisecs < 50 || !is_running);
 }
 
 /**
@@ -200,7 +293,6 @@ void func_stopwatch() {
 	unsigned char quit = 0;
 
 	tm1638_clear_all();
-	tm1638_show_digit(0, FUNC_STOPWATCH, 1);
 	tm1638_show_text(4, "STOP");
 	tm1638_set_led(FUNC_STOPWATCH, 1);
 
@@ -210,7 +302,7 @@ void func_stopwatch() {
 	reset_ticks();
 
 	while (!quit) {
-		show_stopwatch();
+		show_stopwatch(is_running);
 
 		key = tm1638_read_keys();
 
@@ -223,7 +315,7 @@ void func_stopwatch() {
 					if (is_running) {
 						stop_timer0();
 						is_running = 0;
-						show_stopwatch();
+						show_stopwatch(is_running);
 
 					} else {
 						is_running = 1;
@@ -235,7 +327,7 @@ void func_stopwatch() {
 				case 0x40: {
 					if (!is_running) {
 						reset_ticks();
-						show_stopwatch();
+						show_stopwatch(is_running);
 					}
 
 					break;

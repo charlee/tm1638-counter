@@ -13,14 +13,14 @@
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>AT89C52</Device>
-          <Vendor>Microchip</Vendor>
-          <Cpu>IRAM(0-0xFF) IROM(0-0x1FFF) CLOCK(24000000)</Cpu>
+          <Device>SST89C58</Device>
+          <Vendor>SST</Vendor>
+          <Cpu>IRAM(0-0xFF) IROM(0-0x7FFF) CLOCK(33000000)</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile>"LIB\STARTUP.A51" ("Standard 8051 Startup Code")</StartupFile>
           <FlashDriverDll></FlashDriverDll>
-          <DeviceId>2980</DeviceId>
-          <RegisterFile>REGX52.H</RegisterFile>
+          <DeviceId>3169</DeviceId>
+          <RegisterFile>REG52.H</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -36,8 +36,8 @@
           <BinPath></BinPath>
           <IncludePath></IncludePath>
           <LibPath></LibPath>
-          <RegisterFilePath>Atmel\</RegisterFilePath>
-          <DBRegisterFilePath>Atmel\</DBRegisterFilePath>
+          <RegisterFilePath></RegisterFilePath>
+          <DBRegisterFilePath></DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -110,11 +110,11 @@
           <SimDllName>S8051.DLL</SimDllName>
           <SimDllArguments></SimDllArguments>
           <SimDlgDll>DP51.DLL</SimDlgDll>
-          <SimDlgDllArguments>-p52</SimDlgDllArguments>
+          <SimDlgDllArguments>-pSST5X</SimDlgDllArguments>
           <TargetDllName>S8051.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
           <TargetDlgDll>TP51.DLL</TargetDlgDll>
-          <TargetDlgDllArguments>-p52</TargetDlgDllArguments>
+          <TargetDlgDllArguments>-pSST5X</TargetDlgDllArguments>
         </DllOption>
         <DebugOption>
           <OPTHX>
@@ -125,7 +125,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>0</UseSimulator>
+            <UseSimulator>1</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -137,7 +137,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Simulator>
           <Target>
-            <UseTarget>1</UseTarget>
+            <UseTarget>0</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -177,7 +177,7 @@
           </Flash1>
           <bUseTDR>0</bUseTDR>
           <Flash2></Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -273,7 +273,7 @@
               <IRO>
                 <Type>1</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x2000</Size>
+                <Size>0x8000</Size>
               </IRO>
               <IRA>
                 <Type>0</Type>
