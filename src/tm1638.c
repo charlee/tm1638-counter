@@ -1,4 +1,4 @@
-#include <8051.h>
+#include <8052.h>
 #include "tm1638.h"
 
 #define DIO P1_0

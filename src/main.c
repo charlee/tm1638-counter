@@ -18,6 +18,7 @@ void func_timer();
 void func_stopwatch();
 void show_quit();
 void show_reset();
+void show_clear();
 void reset_ticks();
 void show_stopwatch(unsigned char is_running);
 void show_timer(unsigned char is_running, unsigned long timer_ticks);
@@ -96,6 +97,11 @@ void show_reset() {
 	tm1638_show_text(2, "RESET");
 }
 
+void show_clear() {
+	tm1638_clear_7seg();
+	tm1638_show_text(2, "CLEAR");
+}
+
 /**
  * Reset the global ticks counter.
  */
@@ -116,7 +122,7 @@ void func_counter() {
 	tm1638_show_text(3, "COUNT");
 	tm1638_set_led(FUNC_COUNTER, 1);
 
-	delay(2000);
+	delay(1000);
 
 	while (!quit) {
 		tm1638_clear_7seg();
@@ -150,8 +156,9 @@ void func_counter() {
 }
 
 void show_timer(unsigned char is_running, unsigned long timer_ticks) {
-	unsigned long t = timer_ticks - ticks10;
+	unsigned long t = (timer_ticks > ticks10) ? (timer_ticks - ticks10) + 60 : 0;
 	unsigned char centisecs, secs, mins, hours;
+
 	centisecs = t % 100;
 	t = t / 100;
 
@@ -161,13 +168,12 @@ void show_timer(unsigned char is_running, unsigned long timer_ticks) {
 	mins = t % 60;
 	hours = t / 60;
 
-	tm1638_show_dec_d(1, 2, hours);
-	tm1638_show_dec_zd(3, 2, mins);
-	tm1638_show_dec_zd(5, 2, secs);
-	tm1638_show_dec_z(7, 2, centisecs);
+	tm1638_show_dec_d(3, 2, hours);
+	tm1638_show_dec_zd(5, 2, mins);
+	tm1638_show_dec_z(7, 2, secs);
 
 	// flash the LED if running
-	tm1638_set_led(FUNC_TIMER, centisecs < 50 || !is_running);
+	tm1638_set_led(FUNC_TIMER, centisecs > 50 || !is_running);
 }
 
 void func_timer() {
@@ -181,14 +187,17 @@ void func_timer() {
 	tm1638_show_text(3, "TIMER");
 	tm1638_set_led(FUNC_TIMER, 1);
 
-	delay(2000);
+	delay(1000);
 
 	tm1638_clear_7seg();
 	reset_ticks();
 
-	show_timer(is_running, timer_ticks);
-
 	while (!quit) {
+		if (ticks10 > timer_ticks) {
+			stop_timer0();
+			is_running = 0;
+		}
+
 		show_timer(is_running, timer_ticks);
 
 		key = tm1638_read_keys();
@@ -209,26 +218,49 @@ void func_timer() {
 					break;
 
 				case 0x40:
-					if (!is_running) {
-						reset_ticks();
-						show_timer(is_running, timer_ticks);
-					}
-
-				case 0x20:
 					if (ticks10 == 0) {
 						timer_ticks += 100;
 					}
 					break;
 
-				case 0x10:
+				case 0x20:
 					if (ticks10 == 0) {
 						timer_ticks += 6000;
 					}
 					break;
 
-				case 0x08:
+				case 0x10:
 					if (ticks10 == 0) {
 						timer_ticks += 360000;
+					}
+					break;
+
+				case 0x04:
+					if (!is_running) {
+						while (tm1638_read_keys() != 0x04);
+						show_clear();
+						delay(200);
+						key = tm1638_wait_for_keypress();
+						if (key == 2) {
+							reset_ticks();
+						}
+						tm1638_clear_7seg();
+						show_timer(is_running, timer_ticks);
+					}
+					break;
+
+				case 0x02:
+					if (!is_running) {
+						while (tm1638_read_keys() != 0x02);
+						show_reset();
+						delay(200);
+						key = tm1638_wait_for_keypress();
+						if (key == 1) {
+							reset_ticks();
+							timer_ticks = 0;
+						}
+						tm1638_clear_7seg();
+						show_timer(is_running, timer_ticks);
 					}
 					break;
 
@@ -290,7 +322,7 @@ void func_stopwatch() {
 	tm1638_show_text(4, "STOP");
 	tm1638_set_led(FUNC_STOPWATCH, 1);
 
-	delay(2000);
+	delay(1000);
 
 	tm1638_clear_7seg();
 	reset_ticks();
