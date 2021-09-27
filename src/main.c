@@ -23,11 +23,14 @@ void show_stopwatch();
 void delay(unsigned int ms);
 
 
-unsigned int centisecs = 0;
-unsigned char secs = 0;
-unsigned char mins = 0;
-unsigned char hours = 0;
-unsigned char count_down = 0;
+// 10ms ticks
+unsigned long ticks10 = 0;
+
+// unsigned int centisecs = 0;
+// unsigned char secs = 0;
+// unsigned char mins = 0;
+// unsigned char hours = 0;
+// unsigned char count_down = 0;
 
 
 void main()
@@ -96,10 +99,7 @@ void show_reset() {
  * Reset the global ticks counter.
  */
 void reset_ticks() {
-	centisecs = 0;
-	secs = 0;
-	mins = 0;
-	hours = 0;
+	ticks10 = 0;
 }
 
 
@@ -150,12 +150,21 @@ void func_counter() {
 }
 
 void func_timer() {
+	unsigned char key;
+	unsigned char last_key;
+	unsigned char is_running = 0;
+	unsigned char quit = 0;
+
 	tm1638_clear_all();
 	tm1638_show_digit(0, FUNC_TIMER, 1);
 	tm1638_show_text(3, "TIMER");
 	tm1638_set_led(FUNC_TIMER, 1);
 
 	delay(2000);
+
+	tm1638_clear_7seg();
+	reset_ticks();
+
 }
 
 void show_quit() {
@@ -164,6 +173,17 @@ void show_quit() {
 }
 
 void show_stopwatch() {
+	unsigned long t = ticks10;
+	unsigned char centisecs, secs, mins, hours;
+	centisecs = t % 100;
+	t = t / 100;
+
+	secs = t % 60;
+	t = t / 60;
+
+	mins = t % 60;
+	hours = t / 60;
+
 	tm1638_show_dec_d(1, 2, hours);
 	tm1638_show_dec_zd(3, 2, mins);
 	tm1638_show_dec_zd(5, 2, secs);
@@ -247,21 +267,6 @@ void func_stopwatch() {
  */
 void timer0() interrupt 1 {
 
-	centisecs++;
-	if (centisecs == 100) {
-		centisecs = 0;
-		secs++;
-
-		if (secs == 60) {
-			secs = 0;
-			mins++;
-
-			if (mins == 60) {
-				mins = 0;
-				hours++;
-			}
-		}
-	}
-
+	ticks10++;
 	reset_T0();
 }
