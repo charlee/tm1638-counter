@@ -1,10 +1,12 @@
-TM1638 Clock
-=============
+TM1638 Counter
+==============
 
 
-This is a multi-purpose clock based on [TM1638 module](https://www.amazon.ca/8-Bit-Digital-Tube-TM1638-Module/dp/B00GNSO62Q).
+This is a multi-purpose counter based on [TM1638 module](https://www.amazon.ca/8-Bit-Digital-Tube-TM1638-Module/dp/B00GNSO62Q).
 
-![TM1638 LED Module](images/tm1638-led-module.jpg)
+![TM1638 LED Module](images/tm1638-counter-working.jpg)
+
+Also check the [pictures](images/) of this project.
 
 ## Features
 
@@ -88,7 +90,7 @@ Here is the schematics of the controller.
 
 The PCB layout.
 
-![Schematic](schematic/png.png)
+![Schematic](schematic/pcb.png)
 
 
 ## Development
