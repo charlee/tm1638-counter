@@ -2,9 +2,9 @@
 #include "tm1638.h"
 
 
-#define TIMER_10MS (65536 - 10000)
-#define reset_T0() { TH0 = TIMER_10MS / 256; TL0 = TIMER_10MS % 256; }
-#define reset_T1() { TH1 = (65536 - 50000) / 256; TL1 = (65536 - 50000) % 256; }
+#define TIMER_10MS (65536 - 9995)
+#define reset_T0() { TL0 = TIMER_10MS % 256; TH0 = TIMER_10MS / 256; }
+#define reset_T1() { TL1 = (65536 - 50000) % 256; TH1 = (65536 - 50000) / 256; }
 
 #define BUZZER P2_3
 
@@ -458,7 +458,6 @@ void func_stopwatch() {
  * 10ms timer for the stopwatch / timer
  */
 void timer0() __interrupt 1 {
-
 	ticks10++;
 	reset_T0();
 }
