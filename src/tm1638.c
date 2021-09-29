@@ -6,7 +6,7 @@
 #define STB P1_2
 
 
-unsigned char sevenseg_hex[] = {
+__code unsigned char sevenseg_hex[] = {
 	0x3F, 0x06, 0x5B,	0x4F,
 	0x66, 0x6D, 0x7D, 0x07,
   0x7F, 0x6F, 0x77, 0x7C,
@@ -14,7 +14,7 @@ unsigned char sevenseg_hex[] = {
 };
 
 // src: https://en.wikichip.org/wiki/seven-segment_display/representing_letters
-const unsigned char sevenseg_digits_alphabets[75]= {
+__code const unsigned char sevenseg_digits_alphabets[75]= {
 /*  0     1     2     3     4     5     6     7     8     9     :     ;     */
     0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x00, 0x00, 
 /*  <     =     >     ?     @     A     B     C     D     E     F     G     */
